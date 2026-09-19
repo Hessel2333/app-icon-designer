@@ -383,6 +383,26 @@ Prioritize:
 
 Use the project's normal build/framework pipeline for `.ico`.
 
+Windows desktop `.ico` assets carry their own silhouette: do not expect the shell to apply
+an iOS-style rounded-square mask. A square opaque PNG produces a square background in the
+desktop shortcut, even if the app's web UI uses CSS `border-radius`.
+
+Choose the outline from the user's reference and existing design. For a rounded-tile design,
+bake the rounded silhouette into the Windows raster asset, with genuine alpha=0 outside the
+tile and antialiased edges. Rounded tiles are a design choice, not a Windows requirement;
+freeform silhouettes and deliberately square designs remain valid.
+
+Keep a separate unmasked source when other platforms need it. Do not fix transparency noise
+by flattening onto an opaque square and calling it finished. Repair the alpha edge while
+preserving the approved object and composition. Reject painted checkerboards, stray opaque
+pixels, pale corner wedges, and dark or white edge halos.
+
+Export through the existing framework pipeline, preserving alpha. Inspect the actual `.ico`
+frames, not only the source PNG: check the small sizes the pipeline includes (especially
+16/24/32/48px where available) and the largest frame. Do not assume a successful conversion
+means the outline survived. See Microsoft's [icon construction guidance](https://learn.microsoft.com/en-us/windows/apps/design/iconography/app-icon-construction)
+for required sizes in the chosen packaging format.
+
 ### PWA/web
 
 Generate:
@@ -467,6 +487,11 @@ inspection tools and continue manually.
 
 The 32px preview requires visual inspection; numeric checks are not enough.
 
+For assets intended to have transparent surroundings, inspect the alpha channel and composite
+the exported icon over light and dark backgrounds at native size. Check transparent corners,
+smooth contours, and detached pixels; an alpha range of 0–255 alone does not prove a clean mask.
+For Windows, include frames decoded from the final ICO in this check.
+
 ## 12. Safe integration
 
 When the user explicitly asks to replace/install the icon:
@@ -477,6 +502,17 @@ When the user explicitly asks to replace/install the icon:
 5. inspect changed files;
 6. verify no unrelated files changed;
 7. run a build/config sanity check where practical.
+
+Trace the icon through the app's actual entry points: executable/bundle, window/tray, installer,
+and in-app branding where applicable. Replacing source assets does not update an already-built
+EXE or an installed shortcut. When delivering a usable replacement build, rebuild the executable
+and installer and inspect the embedded executable icon; report whether installation was tested.
+Follow the repository's version/signing/release rules, and do not publish an app release merely
+because icon replacement was requested.
+
+If Windows still displays an old shape, first verify the built executable and the shortcut's
+target/icon location. Consider shell icon caching only after checking the real artifact. Do not
+delete system caches, restart Explorer, or terminate a running production app as a routine fix.
 
 Never overwrite current production icon assets merely because a candidate looks promising.
 

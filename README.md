@@ -10,6 +10,8 @@ A Codex skill for designing app icons from repository context, refining a single
 - 以一个主要物体表达产品，避免堆叠符号。
 - 分别打磨轮廓和材质，检查 1024、128、32 像素下的效果。
 - 考虑 Tauri、Electron、原生 Apple、Windows 和 PWA 的输出要求。
+- Windows 圆角图标需在素材中制作圆角及透明四角，不依赖系统自动裁剪；检查实际 ICO 图层在浅色、深色背景上的表现。
+- 区分源素材替换、EXE/安装包重建和安装验证，避免把旧快捷方式或缓存问题误判为素材问题。
 - 单文件技能，无附带脚本或参考文件依赖。
 
 实际图像生成需要运行环境提供图像生成能力；没有该能力时，技能会提供提示词和集成方案。
